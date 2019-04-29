@@ -1,0 +1,25 @@
+;;; sdl.egg -*- Scheme -*-
+
+((category graphics)
+ (author "Christian Kelllermann")
+ (synopsis "Basic SDL-gfx support")
+ (license "LGPL-2.1")
+ (dependencies sdl-base)
+ (component-options
+  ;; TODO: Probably need to generate these dynamically using a custom build.
+  (csc-options "-I/usr/include/SDL"
+               "-D_GNU_SOURCE=1"
+               "-D_REENTRANT")
+  (link-options "-L/usr/lib"
+                "-L"
+                "-lSDL"
+                "-L"
+                "-lpthread"
+                "-L"
+                "-lSDL_gfx"
+                "-L"
+                "-lm"))
+ (components (extension sdl-gfx
+                        (source-dependencies "gfx-primitives.scm"
+                                             "sdl-rotozoom.scm"
+                                             "sdl-framerate.scm"))))
