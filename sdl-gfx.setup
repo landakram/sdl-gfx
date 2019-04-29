@@ -1,0 +1,47 @@
+;;;; sdl.setup -*- Scheme -*-
+
+
+(define (check-depends)
+     
+  (let* ((lib-fun-pack '(("SDL_gfx" "polygonColor" "libsdl-gfx1.2-dev")))
+	 (missing (filter (lambda (lib-fun)
+			    (not (find-library (first lib-fun) (second lib-fun))))
+			  lib-fun-pack)))
+    (for-each
+     (lambda (lib-fun)
+       (print "\nWARNING: You seem to be missing the library " (first lib-fun) "!"))
+     missing)
+    (cond-expand
+     (linux
+      (unless (null? missing)
+	(print "\nSuggested package(s) to install: " (map third missing))))
+     (else #f))))
+
+(check-depends)
+
+(let* ((escape-flags (lambda (fs)
+		       (map
+			(lambda (s) (if (not (or (string-prefix-ci? "-l" s)
+						 (string-prefix-ci? "-i" s)
+						 (string-prefix-ci? "-d" s)))
+					(sprintf " -C ~a " s)
+					(sprintf " ~a " s)))
+			(string-split fs))))
+       (sdl-cflags (apply string-append
+			  (escape-flags
+			   (with-input-from-pipe "sdl-config --cflags" read-line))))
+       (sdl-lflags (apply string-append
+			  ;; sdl-config doesn't give these
+			  " -lSDL_gfx -lm"
+			  (escape-flags
+			   (with-input-from-pipe "sdl-config --libs" read-line))))
+       (types? (version>=? (chicken-version) "4.7.4"))
+       (files (append '("sdl-gfx.so"
+			"sdl-gfx.import.so")
+		      (if types? '("sdl-gfx.types") '()))))
+  (compile ,@(if types? '(-emit-type-file sdl-gfx.types) '())
+	   -s -O3 -d1 sdl-gfx.scm -j sdl-gfx -lSDL ,sdl-cflags ,sdl-lflags)
+  (compile -s -O3 -d0 sdl-gfx.import.scm ,sdl-cflags ,sdl-lflags)
+
+  (install-extension 'sdl-gfx files '((version "0.3"))))
+
