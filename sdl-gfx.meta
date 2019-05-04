@@ -1,9 +1,0 @@
-;;; sdl.meta -*- Hen -*-
-
-((category graphics)
- (author "Christian Kelllermann")
- (synopsis "Basic SDL-gfx support")
- (license "LGPL-2.1")
- (egg "sdl-gfx.egg")
- (needs sdl-base)
- (files "COPYING" "sdl.release-info" "sdl-gfx.meta" "sdl-gfx.scm" "sdl-gfx.setup" "gfx-primitives.scm" "sdl-framerate.scm" "sdl-rotozoom.scm"))

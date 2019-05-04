@@ -108,7 +108,11 @@
   rotate-surface-90-degrees
   )
 
-(import chicken scheme foreign)
+ (import (chicken base) scheme (chicken foreign))
+ (import (chicken syntax))
+ (import (chicken blob))
+ (import (chicken gc))
+ (import-for-syntax srfi-1)
 
 (require-extension sdl-base)
 (import-for-syntax sdl-base)
@@ -124,14 +128,15 @@ EOF
 )
 
 (define-syntax --sdl-flags
-  (lambda (e r c)
-      `(,(r 'begin)
-     ,@(append-map (lambda (str)
-		     (let* ((sym (string->symbol str))
-                            (psym (string->symbol (string-append "-" str))))
-		       `((,(r 'define-foreign-variable) ,psym unsigned-integer ,str)
-                         (,(r 'define) ,sym ,psym))))
-		   (cdr e)))))
+  (er-macro-transformer
+   (lambda (e r c)
+     `(,(r 'begin)
+       ,@(append-map (lambda (str)
+                       (let* ((sym (string->symbol str))
+                              (psym (string->symbol (string-append "-" str))))
+                         `((,(r 'define-foreign-variable) ,psym unsigned-integer ,str)
+                           (,(r 'define) ,sym ,psym))))
+                     (cdr e))))))
 
 (define-syntax pointer-to-record-lambda
   (ir-macro-transformer
